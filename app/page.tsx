@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Play, Sparkles, ArrowRight, Database, History, LogIn, LogOut, User } from "lucide-react"
 import { SummaryDisplay } from "@/components/summary-display"
 import Link from "next/link"
-import { supabase } from "@/lib/supabase/client" // Updated Supabase client import
+import { supabase } from "@/lib/supabase/client"
 import { signOut } from "@/lib/actions"
 
 // Mock data for demonstration
@@ -357,18 +357,16 @@ export default function HomePage() {
   const [audioStatus, setAudioStatus] = useState(null)
   const [fromStorage, setFromStorage] = useState(false)
   const [user, setUser] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(false) // Set to false since we're using mock client
 
-  const supabaseClient = supabase // Updated to use the correct export
+  const supabaseClient = supabase
 
   const getUserDisplayName = (user) => {
     if (!user) return null
 
-    // Try to get display name from user metadata
     const displayName = user.user_metadata?.full_name || user.user_metadata?.display_name
     if (displayName) return displayName
 
-    // Fall back to email, but show just the username part
     if (user.email) {
       return user.email.split("@")[0]
     }
@@ -377,24 +375,10 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser()
-      setUser(user)
-      setAuthLoading(false)
-    }
-
-    getUser()
-
-    const {
-      data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabaseClient.auth])
+    // Mock authentication - always returns no user
+    setUser(null)
+    setAuthLoading(false)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

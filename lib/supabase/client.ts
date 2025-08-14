@@ -1,16 +1,53 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+// Mock Supabase client for environments where @supabase/supabase-js is not available
+export const isSupabaseConfigured = false
 
-// Check if Supabase environment variables are available
-export const isSupabaseConfigured =
-  typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string" &&
-  process.env.NEXT_PUBLIC_SUPABASE_URL.length > 0 &&
-  typeof process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string" &&
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length > 0
-
-// Create a function that returns the Supabase client (similar to auth helpers pattern)
-export const createClient = () => {
-  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// Mock authentication methods
+const mockAuth = {
+  getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+  getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+  signInWithPassword: () =>
+    Promise.resolve({ data: null, error: { message: "Mock client - authentication not available" } }),
+  signUp: () => Promise.resolve({ data: null, error: { message: "Mock client - authentication not available" } }),
+  signOut: () => Promise.resolve({ error: null }),
+  onAuthStateChange: (callback) => {
+    // Return a mock subscription
+    return {
+      data: { subscription: { unsubscribe: () => {} } },
+    }
+  },
 }
 
-// Create a singleton instance of the Supabase client for backward compatibility
+// Mock database methods
+const mockFrom = (table) => ({
+  select: (columns = "*") => ({
+    eq: (column, value) => ({
+      single: () => Promise.resolve({ data: null, error: { message: "Mock client - database not available" } }),
+      order: (column, options) => ({
+        limit: (count) => Promise.resolve({ data: [], error: null }),
+      }),
+    }),
+    order: (column, options) => ({
+      limit: (count) => Promise.resolve({ data: [], error: null }),
+    }),
+  }),
+  insert: (data) => ({
+    select: () => Promise.resolve({ data: null, error: { message: "Mock client - database not available" } }),
+  }),
+  update: (data) => ({
+    eq: (column, value) => ({
+      select: () => Promise.resolve({ data: null, error: { message: "Mock client - database not available" } }),
+    }),
+  }),
+  delete: () => ({
+    eq: (column, value) => Promise.resolve({ error: null }),
+  }),
+})
+
+// Create mock client
+export const createClient = () => ({
+  auth: mockAuth,
+  from: mockFrom,
+})
+
+// Export singleton instance
 export const supabase = createClient()
