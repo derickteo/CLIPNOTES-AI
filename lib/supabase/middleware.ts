@@ -1,12 +1,15 @@
-import { createClient } from "@supabase/supabase-js"
 import { NextResponse, type NextRequest } from "next/server"
 
 // Check if Supabase environment variables are available
-export const isSupabaseConfigured =
-  typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string" &&
-  process.env.NEXT_PUBLIC_SUPABASE_URL.length > 0 &&
-  typeof process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string" &&
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length > 0
+export const isSupabaseConfigured = false // Mock configuration
+
+// Mock Supabase client for middleware
+const createMockClient = () => ({
+  auth: {
+    exchangeCodeForSession: () => Promise.resolve({ data: null, error: null }),
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+  },
+})
 
 export async function updateSession(request: NextRequest) {
   // If Supabase is not configured, just continue without auth
@@ -18,7 +21,7 @@ export async function updateSession(request: NextRequest) {
 
   const res = NextResponse.next()
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+  const supabase = createMockClient()
 
   // Check if this is an auth callback
   const requestUrl = new URL(request.url)
