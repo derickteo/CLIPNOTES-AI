@@ -1,15 +1,12 @@
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
 import { NextResponse, type NextRequest } from "next/server"
 
 // Check if Supabase environment variables are available
-export const isSupabaseConfigured = false // Mock configuration
-
-// Mock Supabase client for middleware
-const createMockClient = () => ({
-  auth: {
-    exchangeCodeForSession: () => Promise.resolve({ data: null, error: null }),
-    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-  },
-})
+export const isSupabaseConfigured =
+  typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string" &&
+  process.env.NEXT_PUBLIC_SUPABASE_URL.length > 0 &&
+  typeof process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string" &&
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length > 0
 
 export async function updateSession(request: NextRequest) {
   // If Supabase is not configured, just continue without auth
@@ -21,7 +18,8 @@ export async function updateSession(request: NextRequest) {
 
   const res = NextResponse.next()
 
-  const supabase = createMockClient()
+  // Create a Supabase client configured to use cookies
+  const supabase = createMiddlewareClient({ req: request, res })
 
   // Check if this is an auth callback
   const requestUrl = new URL(request.url)
@@ -37,22 +35,16 @@ export async function updateSession(request: NextRequest) {
   // Refresh session if expired - required for Server Components
   await supabase.auth.getSession()
 
+  // Protected routes - redirect to login if not authenticated
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/auth/login") ||
     request.nextUrl.pathname.startsWith("/auth/sign-up") ||
     request.nextUrl.pathname === "/auth/callback"
 
   // Define routes that require authentication
-  const protectedRoutes = [
-    "/dashboard",
-    "/profile",
-    "/settings",
-    // Note: /summaries is now public but shows user-specific content when authenticated
-  ]
-
+  const protectedRoutes = ["/dashboard", "/profile", "/settings"]
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
-  // Only redirect to login for protected routes
   if (isProtectedRoute && !isAuthRoute) {
     const {
       data: { session },
