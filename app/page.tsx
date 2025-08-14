@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Play, Sparkles, ArrowRight, Database, History, LogIn } from "lucide-react"
 import { SummaryDisplay } from "@/components/summary-display"
 import Link from "next/link"
 
@@ -240,7 +239,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
+                  <span className="text-white">✨</span>
                 </div>
                 <h1 className="text-xl font-bold text-slate-900">ClipNotesAI</h1>
                 {audioStatus && (
@@ -257,16 +256,14 @@ export default function HomePage() {
                 )}
                 {fromStorage && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-                    <Database className="w-3 h-3 mr-1" />
-                    Saved Data
+                    💾 Saved Data
                   </Badge>
                 )}
               </div>
               <div className="flex items-center gap-3">
                 <Link href="/auth/login">
                   <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
-                    <LogIn className="w-4 h-4 mr-1" />
-                    Sign In
+                    👤 Sign In
                   </Button>
                 </Link>
                 <Button
@@ -306,7 +303,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+                <span className="text-white">✨</span>
               </div>
               <h1 className="text-xl font-bold text-slate-900">ClipNotesAI</h1>
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
@@ -316,14 +313,12 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <Link href="/auth/login">
                 <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
-                  <LogIn className="w-4 h-4 mr-1" />
-                  Sign In
+                  👤 Sign In
                 </Button>
               </Link>
               <Link href="/summaries">
                 <Button variant="ghost" size="sm" className="text-slate-600 hover:bg-slate-100">
-                  <History className="w-4 h-4 mr-1" />
-                  History
+                  📋 History
                 </Button>
               </Link>
               <Link href="/pricing">
@@ -367,7 +362,7 @@ export default function HomePage() {
                     className="h-12 text-base border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20"
                     disabled={isLoading}
                   />
-                  <Play className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400">▶️</span>
                 </div>
                 <div className="flex gap-3">
                   <Button
@@ -384,7 +379,7 @@ export default function HomePage() {
                     ) : (
                       <div className="flex items-center gap-2">
                         Get Your First Summary Free
-                        <ArrowRight className="w-4 h-4" />
+                        <span>→</span>
                       </div>
                     )}
                   </Button>
