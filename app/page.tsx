@@ -1,13 +1,17 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Play, Sparkles, ArrowRight, Database, History, LogIn, LogOut, User } from "lucide-react"
 import { SummaryDisplay } from "@/components/summary-display"
 import Link from "next/link"
+import { supabase } from "@/lib/supabase/client" // Updated Supabase client import
+import { signOut } from "@/lib/actions"
 
 // Mock data for demonstration
 const mockSummaryData = {
@@ -116,14 +120,281 @@ const mockSummaryData = {
   ],
 }
 
+const SignedInDashboard = ({ user, onSubmit, url, setUrl, isLoading, handleTestVideo }) => {
+  const [recentSummaries, setRecentSummaries] = useState([])
+  const [loadingRecent, setLoadingRecent] = useState(true)
+
+  useEffect(() => {
+    const fetchRecentSummaries = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("summaries")
+          .select("id, video_title, video_url, created_at, video_duration")
+          .order("created_at", { ascending: false })
+          .limit(3)
+
+        if (!error && data) {
+          setRecentSummaries(data)
+        }
+      } catch (error) {
+        console.error("Error fetching recent summaries:", error)
+      } finally {
+        setLoadingRecent(false)
+      }
+    }
+
+    fetchRecentSummaries()
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-slate-900">ClipNotesAI</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-slate-900">
+                    {user.user_metadata?.full_name || user.user_metadata?.display_name || user.email.split("@")[0]}
+                  </div>
+                  <div className="text-xs text-slate-500">{user.email}</div>
+                </div>
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-emerald-600" />
+                </div>
+                <form action={signOut}>
+                  <Button type="submit" variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
+              <Link href="/summaries">
+                <Button variant="ghost" size="sm" className="text-slate-600 hover:bg-slate-100">
+                  <History className="w-4 h-4 mr-1" />
+                  History
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="ghost" size="sm" className="text-slate-600 hover:bg-slate-100">
+                  Pricing
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+            Welcome back,{" "}
+            {user.user_metadata?.full_name || user.user_metadata?.display_name || user.email.split("@")[0]}!
+          </h2>
+          <p className="text-slate-600">Ready to summarize your next video?</p>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Action Card */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-lg border-0 bg-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-emerald-600" />
+                  Create New Summary
+                </CardTitle>
+                <CardDescription>Paste any YouTube video URL to generate comprehensive AI notes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={onSubmit} className="space-y-4">
+                  <div className="relative">
+                    <Input
+                      type="url"
+                      placeholder="Paste YouTube Video Link Here"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      className="h-12 text-base border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20"
+                      disabled={isLoading}
+                    />
+                    <Play className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      type="submit"
+                      disabled={!url.trim() || isLoading}
+                      className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Processing...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          Generate Summary
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleTestVideo}
+                      disabled={isLoading}
+                      className="px-6 bg-transparent"
+                    >
+                      Try Demo
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <div className="grid md:grid-cols-3 gap-4 mt-6">
+              <Card className="bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-emerald-700">Free</div>
+                  <div className="text-sm text-emerald-600">Current Plan</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-700">5</div>
+                  <div className="text-sm text-blue-600">Videos/Month</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-700">∞</div>
+                  <div className="text-sm text-purple-600">Export Formats</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Recent Summaries */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <History className="w-4 h-4" />
+                  Recent Summaries
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingRecent ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-slate-200 rounded mb-2"></div>
+                        <div className="h-3 bg-slate-100 rounded w-2/3"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recentSummaries.length > 0 ? (
+                  <div className="space-y-3">
+                    {recentSummaries.map((summary) => (
+                      <div key={summary.id} className="border-b border-slate-100 pb-3 last:border-b-0">
+                        <div className="text-sm font-medium text-slate-900 truncate">{summary.video_title}</div>
+                        <div className="text-xs text-slate-500">
+                          {new Date(summary.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="text-slate-400 mb-2">No summaries yet</div>
+                    <div className="text-xs text-slate-500">Create your first summary above</div>
+                  </div>
+                )}
+                <div className="mt-4">
+                  <Link href="/summaries">
+                    <Button variant="outline" size="sm" className="w-full bg-transparent">
+                      View All
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Upgrade Card */}
+            <Card className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-0">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-2">Upgrade to Pro</h3>
+                <p className="text-emerald-100 text-sm mb-4">
+                  Unlimited summaries, priority support, and advanced features
+                </p>
+                <Link href="/pricing">
+                  <Button size="sm" className="bg-white text-emerald-600 hover:bg-slate-50 w-full">
+                    View Plans
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [summaryData, setSummaryData] = useState(null)
-  const [transcript, setTranscript] = useState(null)
+  const [transcript, setTranscript] = useState(null) // Added transcript state
   const [showDemo, setShowDemo] = useState(false)
   const [audioStatus, setAudioStatus] = useState(null)
   const [fromStorage, setFromStorage] = useState(false)
+  const [user, setUser] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  const supabaseClient = supabase // Updated to use the correct export
+
+  const getUserDisplayName = (user) => {
+    if (!user) return null
+
+    // Try to get display name from user metadata
+    const displayName = user.user_metadata?.full_name || user.user_metadata?.display_name
+    if (displayName) return displayName
+
+    // Fall back to email, but show just the username part
+    if (user.email) {
+      return user.email.split("@")[0]
+    }
+
+    return "User"
+  }
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser()
+      setUser(user)
+      setAuthLoading(false)
+    }
+
+    getUser()
+
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabaseClient.auth])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,7 +402,7 @@ export default function HomePage() {
 
     setIsLoading(true)
     setAudioStatus(null)
-    setTranscript(null)
+    setTranscript(null) // Reset transcript
     setFromStorage(false)
 
     try {
@@ -150,7 +421,7 @@ export default function HomePage() {
 
       const result = await response.json()
       setSummaryData(result.summary)
-      setTranscript(result.transcript)
+      setTranscript(result.transcript) // Set transcript from API response
       setAudioStatus(result.audioExtractionStatus)
       setFromStorage(result.from_storage || false)
 
@@ -182,7 +453,7 @@ export default function HomePage() {
     const testUrl = "https://youtu.be/HwmzhX19c3I"
     setUrl(testUrl)
     setAudioStatus(null)
-    setTranscript(null)
+    setTranscript(null) // Reset transcript
     setFromStorage(false)
 
     setIsLoading(true)
@@ -202,7 +473,7 @@ export default function HomePage() {
 
       const result = await response.json()
       setSummaryData(result.summary)
-      setTranscript(result.transcript)
+      setTranscript(result.transcript) // Set transcript from API response
       setAudioStatus(result.audioExtractionStatus)
       setFromStorage(result.from_storage || false)
 
@@ -226,7 +497,40 @@ export default function HomePage() {
     }
   }
 
+  const handleTestAudioExtraction = async () => {
+    const testUrl = "https://youtu.be/HwmzhX19c3I"
+    setUrl(testUrl)
+
+    console.log("Testing audio extraction specifically...")
+    try {
+      const response = await fetch("/api/test-audio", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: testUrl }),
+      })
+
+      const result = await response.json()
+      console.log("Audio extraction test result:", result)
+
+      if (result.apiYTResult?.success) {
+        alert(
+          `Audio extraction test successful! Found ${result.apiYTResult.foundLinks?.length || 0} potential download links. Check console for details.`,
+        )
+      } else {
+        alert(
+          `Audio extraction test failed: ${result.apiYTResult?.error || "Unknown error"}. Check console for details.`,
+        )
+      }
+    } catch (error) {
+      console.error("Audio extraction test error:", error)
+      alert(`Test failed: ${error.message}`)
+    }
+  }
+
   const handleTimestampClick = (timestamp: number) => {
+    // Implement video player integration
     console.log(`Jump to timestamp: ${timestamp}s`)
   }
 
@@ -239,7 +543,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white">✨</span>
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <h1 className="text-xl font-bold text-slate-900">ClipNotesAI</h1>
                 {audioStatus && (
@@ -256,21 +560,49 @@ export default function HomePage() {
                 )}
                 {fromStorage && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-                    💾 Saved Data
+                    <Database className="w-3 h-3 mr-1" />
+                    Saved Data
                   </Badge>
                 )}
               </div>
               <div className="flex items-center gap-3">
-                <Link href="/auth/login">
-                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
-                    👤 Sign In
-                  </Button>
-                </Link>
+                {!authLoading && (
+                  <>
+                    {user ? (
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-slate-900">{getUserDisplayName(user)}</div>
+                          <div className="text-xs text-slate-500">{user.email}</div>
+                        </div>
+                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-emerald-600" />
+                        </div>
+                        <form action={signOut}>
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-600 hover:text-slate-900"
+                          >
+                            <LogOut className="w-4 h-4" />
+                          </Button>
+                        </form>
+                      </div>
+                    ) : (
+                      <Link href="/auth/login">
+                        <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                          <LogIn className="w-4 h-4 mr-1" />
+                          Sign In
+                        </Button>
+                      </Link>
+                    )}
+                  </>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => {
                     setSummaryData(null)
-                    setTranscript(null)
+                    setTranscript(null) // Reset transcript
                     setAudioStatus(null)
                     setFromStorage(false)
                   }}
@@ -286,12 +618,25 @@ export default function HomePage() {
         <main className="container mx-auto px-4 py-8">
           <SummaryDisplay
             data={summaryData}
-            transcript={transcript}
-            audioStatus={audioStatus}
+            transcript={transcript} // Pass transcript to component
+            audioStatus={audioStatus} // Pass audioStatus to component
             onTimestampClick={handleTimestampClick}
           />
         </main>
       </div>
+    )
+  }
+
+  if (user && !authLoading) {
+    return (
+      <SignedInDashboard
+        user={user}
+        onSubmit={handleSubmit}
+        url={url}
+        setUrl={setUrl}
+        isLoading={isLoading}
+        handleTestVideo={handleTestVideo}
+      />
     )
   }
 
@@ -303,7 +648,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-                <span className="text-white">✨</span>
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-xl font-bold text-slate-900">ClipNotesAI</h1>
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
@@ -311,14 +656,37 @@ export default function HomePage() {
               </Badge>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/auth/login">
-                <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
-                  👤 Sign In
-                </Button>
-              </Link>
+              {!authLoading && (
+                <>
+                  {user ? (
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-slate-900">{getUserDisplayName(user)}</div>
+                        <div className="text-xs text-slate-500">{user.email}</div>
+                      </div>
+                      <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <form action={signOut}>
+                        <Button type="submit" variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                          <LogOut className="w-4 h-4" />
+                        </Button>
+                      </form>
+                    </div>
+                  ) : (
+                    <Link href="/auth/login">
+                      <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                        <LogIn className="w-4 h-4 mr-1" />
+                        Sign In
+                      </Button>
+                    </Link>
+                  )}
+                </>
+              )}
               <Link href="/summaries">
                 <Button variant="ghost" size="sm" className="text-slate-600 hover:bg-slate-100">
-                  📋 History
+                  <History className="w-4 h-4 mr-1" />
+                  History
                 </Button>
               </Link>
               <Link href="/pricing">
@@ -362,37 +730,26 @@ export default function HomePage() {
                     className="h-12 text-base border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20"
                     disabled={isLoading}
                   />
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400">▶️</span>
+                  <Play className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                 </div>
-                <div className="flex gap-3">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={!url.trim() || isLoading}
-                    className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all duration-200 hover:scale-[1.02]"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Analyzing Video Content...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        Get Your First Summary Free
-                        <span>→</span>
-                      </div>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleTestVideo}
-                    disabled={isLoading}
-                    className="px-6 bg-transparent"
-                  >
-                    Try Demo
-                  </Button>
-                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={!url.trim() || isLoading}
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all duration-200 hover:scale-[1.02]"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Analyzing Video Content...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      Get Your First Summary Free
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  )}
+                </Button>
               </form>
             </CardContent>
           </Card>
