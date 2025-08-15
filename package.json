@@ -2,7 +2,7 @@
   "dependencies": {
     "@ai-sdk/groq": "latest",
     "@radix-ui/react-dropdown-menu": "latest",
-    "@supabase/auth-helpers-nextjs": "latest",
+    "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
