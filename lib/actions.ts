@@ -1,7 +1,6 @@
 "use server"
 
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
 export async function signIn(prevState: any, formData: FormData) {
@@ -18,8 +17,11 @@ export async function signIn(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = createClient()
+
+  if (!supabase) {
+    return { error: "Authentication service is not available" }
+  }
 
   try {
     const { error } = await supabase.auth.signInWithPassword({
@@ -53,15 +55,19 @@ export async function signUp(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = createClient()
+
+  if (!supabase) {
+    return { error: "Authentication service is not available" }
+  }
 
   try {
     const { error } = await supabase.auth.signUp({
       email: email.toString(),
       password: password.toString(),
       options: {
-        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || window.location.origin,
+        emailRedirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
       },
     })
 
@@ -77,9 +83,13 @@ export async function signUp(prevState: any, formData: FormData) {
 }
 
 export async function signOut() {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = createClient()
+
+  if (!supabase) {
+    redirect("/auth/login")
+    return
+  }
 
   await supabase.auth.signOut()
-  redirect("/auth/login")
+  redirect("/")
 }

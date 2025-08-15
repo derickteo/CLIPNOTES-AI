@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@ai-sdk/groq':
         specifier: latest
-        version: 2.0.8(zod@3.23.8)
+        version: 2.0.9(zod@3.23.8)
       '@radix-ui/react-collapsible':
         specifier: ^1.0.3
         version: 1.0.3(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -24,11 +24,11 @@ importers:
         specifier: latest
         version: 0.10.0(@supabase/supabase-js@2.55.0)
       '@supabase/supabase-js':
-        specifier: ^2.55.0
+        specifier: latest
         version: 2.55.0
       ai:
         specifier: latest
-        version: 5.0.13(zod@3.23.8)
+        version: 5.0.14(zod@3.23.8)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -93,8 +93,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
-  '@ai-sdk/groq@2.0.8':
-    resolution: {integrity: sha512-WrnOvzTWX6+798JwgmNl9ExmFG23LRP0tOFhMi3T7sPicBWKpNnr2++uKcZfVE/Nat1zfcPjat/IB5z1po9nxg==}
+  '@ai-sdk/groq@2.0.9':
+    resolution: {integrity: sha512-qrSHXGLxgNcdRA6muNd4IYP8ZHi8MOcUJ46OKZwKEQCL12cqASv82sldYh8puJC7KbxwC/LV8PwcOzfNbMRMDw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -982,8 +982,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  ai@5.0.13:
-    resolution: {integrity: sha512-b/UBzDXilDtsyUlf0D3/R1oyScnoMyWKKO4BHeUJD1UQ04V1rNPu27ZD7v9Em3WqvMOkWFdPYA/kCwMcF1G93A==}
+  ai@5.0.14:
+    resolution: {integrity: sha512-xiujFa879skB7YxGzbeHAxepsr6AEaWcHPXrc5a9MRM6p4WdVAwn6mGwVZkBnhqGfZtXFr4LUnU2ayvcjWp5ig==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -2517,7 +2517,7 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.3(zod@3.23.8)
       zod: 3.23.8
 
-  '@ai-sdk/groq@2.0.8(zod@3.23.8)':
+  '@ai-sdk/groq@2.0.9(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.3(zod@3.23.8)
@@ -3334,7 +3334,7 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  ai@5.0.13(zod@3.23.8):
+  ai@5.0.14(zod@3.23.8):
     dependencies:
       '@ai-sdk/gateway': 1.0.6(zod@3.23.8)
       '@ai-sdk/provider': 2.0.0

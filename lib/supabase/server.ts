@@ -1,5 +1,4 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 import { cache } from "react"
 
 // Check if Supabase environment variables are available
@@ -11,19 +10,12 @@ export const isSupabaseConfigured =
 
 // Create a cached version of the Supabase client for Server Components
 export const createClient = cache(() => {
-  const cookieStore = cookies()
-
   if (!isSupabaseConfigured) {
-    console.warn("Supabase environment variables are not set. Using dummy client.")
-    return {
-      auth: {
-        getUser: () => Promise.resolve({ data: { user: null }, error: null }),
-        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-      },
-    }
+    console.warn("Supabase environment variables are not set.")
+    return null
   }
 
-  return createServerComponentClient({ cookies: () => cookieStore })
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 })
 
 export const createServerClient = createClient
